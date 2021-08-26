@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-echo-pod
+  labels:
+    app: test-echo
+spec:
+  containers:
+  - image: registry.access.redhat.com/ubi8-micro:latest
+    command:
+        - bash
+        - "-c"
+        - "while true; do echo hello there $COUNTER; ((COUNTER++)); done"
+    imagePullPolicy: IfNotPresent
+    name: test-echo
+  restartPolicy: Always
