@@ -20,3 +20,17 @@ Some openshift hacking bits
     --prefix PREFIX  Report only on matching prefixes
     --filter FILTER  Report only on keys containing filter
     ```
+* check_service_endpoints.py
+    ```
+    usage: check_service_endpoints.py [-h] [--logLevel {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}] [endpoints_file] [pods_file]
+
+    Check service endpoints to ensure that all IPs are backed by running pods
+
+    positional arguments:
+    endpoints_file        Use YAML formatted input file instead querying `oc get endpoints --all-namespaces -o yaml`
+    pods_file             Use YAML formatted input file instead querying `oc get pods --all-namespaces -o yaml`
+
+    options:
+    -h, --help            show this help message and exit
+    --logLevel {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}
+    ```
