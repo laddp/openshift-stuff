@@ -92,15 +92,16 @@ Some openshift hacking bits
     Gathering subprocess data
     Gathering pod data
     Processed 290 pods - 132 unique IPs running
+    W:   skipping - no subsets - service cert-manager-operator/cert-manager-operator-controller-manager-metrics-service
+    W:   skipping - no subsets - service openshift-machine-api/machine-api-controllers
+    W:   skipping - no subsets - service openshift-machine-api/machine-api-operator-webhook
+    Checked 93 services - 0 missing IPs found
+
+    # check_service_endpoints.py endpoints.yaml pods.yaml
+    Processed 81 pods - 39 unique IPs running
     E:   INVALID SERVICE IP found: Pod IP 10.130.2.2 from service default/docker-registry
     W:   skipping - no subsets - service glusterfs/gluster.org-glusterblock-glusterfs
     E:   INVALID SERVICE IP found: Pod IP 10.0.91.48 from service kube-system/kubelet
     E:   INVALID SERVICE IP found: Pod IP 10.0.91.48 from service openshift-monitoring/node-exporter
     Checked 24 services - 3 missing IPs found
-    
-    # check_service_endpoints.py endpoints.yaml pods.yaml
-    Processed 81 pods - 39 unique IPs running
-    W:   skipping - no subsets - service glusterfs/gluster.org-glusterblock-glusterfs
-    Checked 24 services - 0 missing IPs found
-
     ```
