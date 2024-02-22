@@ -20,8 +20,8 @@ else:
 #################
 parser = argparse.ArgumentParser(description="Check service endpoints to ensure that all IPs are backed by running pods")
 parser.add_argument('--logLevel', choices=levelNames)
-parser.add_argument('endpoints_file', type=argparse.FileType('r'), nargs="?", help="Use YAML formatted input file instead querying `oc get endpoints --all-namespaces -o yaml`")
-parser.add_argument('pods_file', type=argparse.FileType('r'), nargs="?", help="Use YAML formatted input file instead querying `oc get pods --all-namespaces -o yaml`")
+parser.add_argument('endpoints_file', type=argparse.FileType('r'), nargs="?", help="Use YAML formatted input file instead of querying `oc get endpoints --all-namespaces -o yaml`")
+parser.add_argument('pods_file', type=argparse.FileType('r'), nargs="?", help="Use YAML formatted input file instead of querying `oc get pods --all-namespaces -o yaml`")
 
 arguments = parser.parse_args()
 
@@ -33,6 +33,7 @@ if arguments.logLevel is not None:
 # read endpoints
 ################
 if arguments.endpoints_file is None:
+    print("Gathering subprocess data")
     if hasattr(subprocess, 'run'):
         endpoints_run = subprocess.run(['oc', 'get', 'endpoints', '--all-namespaces', '-o', 'yaml'],
                                        check=True, capture_output=True)
@@ -53,6 +54,7 @@ except yaml.YAMLError as exc:
 # read pods
 ###########
 if arguments.pods_file is None:
+    print("Gathering pod data")
     if hasattr(subprocess, 'run'):
         pods_run = subprocess.run(['oc', 'get', 'pods', '--all-namespaces', '-o', 'yaml'],
                           check=True, capture_output=True)
@@ -105,9 +107,9 @@ for pod in pods['items']:
                     'name': pod['metadata']['name'],
                     'podCount': 1 }
         else:
-            logging.warning("Skipping pod in status other than 'Running'" + pod['status']['phase']+
-                             " IP: " + pod['status']['podIP'] +  + ""
-                             " Namespace/name: " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
+            logging.info("Skipping pod in status other than 'Running' - " + pod['status']['phase'] +
+                         " IP: " + pod['status']['podIP'] + " " +
+                         " Namespace/name: " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
     else:
         logging.error("unknown item type \"" + item['kind'] + "\"")
 

@@ -14,7 +14,9 @@ parser = argparse.ArgumentParser(description="Inventory an etcd instance and rep
 parser.add_argument('--depth', type=int, help="Maximum depth of results to report")
 parser.add_argument('--prefix', help="Report only on matching prefixes")
 parser.add_argument('--filter', help="Report only on keys containing filter")
-parser.add_argument('input_file', type=argparse.FileType('r'), nargs="?", help="Use JSON formmated input file instead of querying etcd")
+parser.add_argument('input_file', type=argparse.FileType('r'), nargs="?",
+                    help="Use JSON formmated input file instead of querying etcd with " + 
+                    "'etcdctl get --prefix / --write-out=json --dial-timeout=5m --command-timeout=5m'")
 
 arguments = parser.parse_args()
 
