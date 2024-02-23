@@ -67,41 +67,43 @@ Some openshift hacking bits
     Search tool to check all OCP service backend IPs for pods that are not running.  This should not
     normally happen, but in some scenarios a unknown bug may cause this to happen.
 
-    ```
+    ~~~
     usage: check_service_endpoints.py [-h]
-                    [--logLevel {INFO,CRITICAL,WARN,WARNING,ERROR,DEBUG,FATAL}]
-                    [endpoints_file] [pods_file]
+                [--logLevel {CRITICAL,FATAL,ERROR,WARNING,INFO,DEBUG}]
+                [data_file]
 
     Check service endpoints to ensure that all IPs are backed by running pods
 
     positional arguments:
-    endpoints_file        Use YAML formatted input file instead of querying
-                          `oc getendpoints --all-namespaces -o yaml`
-    pods_file             Use YAML formatted input file instead of querying
-                          `oc get pods --all-namespaces -o yaml`
+    data_file             Use YAML formatted input file instead of querying
+                          `oc get endpoints,pods --all-namespaces -o yaml`
 
-    optional arguments:
+    options:
     -h, --help            show this help message and exit
-    --logLevel {INFO,CRITICAL,WARN,WARNING,ERROR,DEBUG,FATAL}
-    ```
+    --logLevel {CRITICAL,FATAL,ERROR,WARNING,INFO,DEBUG}
+    ~~~
 
     Sample output:
 
-    ```
-    ./check_service_endpoints.py
-    Gathering subprocess data
-    Gathering pod data
-    Processed 290 pods - 132 unique IPs running
-    W:   skipping - no subsets - service cert-manager-operator/cert-manager-operator-controller-manager-metrics-service
-    W:   skipping - no subsets - service openshift-machine-api/machine-api-controllers
-    W:   skipping - no subsets - service openshift-machine-api/machine-api-operator-webhook
-    Checked 93 services - 0 missing IPs found
+    ~~~
+    # check_service_endpoints.py
+    Gathering endpoint and pod data from oc
+    Endpoint and pod data loaded, parsing
+    Endpoint and pod data parsed
+    Cataloging pod data
+    Processed 293 pods - 199 running pods with 133 unique IPs
+    Checking service endpoints
+    Checked 170 endpoints on 96 services - 0 missing IPs found
 
-    # check_service_endpoints.py endpoints.yaml pods.yaml
-    Processed 81 pods - 39 unique IPs running
+    ./check_service_endpoints.py data.yaml
+    Loading endpoint and pod data from data.yaml
+    Endpoint and pod data loaded, parsing
+    Endpoint and pod data parsed
+    Cataloging pod data
+    Processed 81 pods - 81 running pods with 39 unique IPs
+    Checking service endpoints
     E:   INVALID SERVICE IP found: Pod IP 10.130.2.2 from service default/docker-registry
-    W:   skipping - no subsets - service glusterfs/gluster.org-glusterblock-glusterfs
     E:   INVALID SERVICE IP found: Pod IP 10.0.91.48 from service kube-system/kubelet
     E:   INVALID SERVICE IP found: Pod IP 10.0.91.48 from service openshift-monitoring/node-exporter
-    Checked 24 services - 3 missing IPs found
-    ```
+    Checked 63 endpoints on 24 services - 3 missing IPs found
+    ~~~
