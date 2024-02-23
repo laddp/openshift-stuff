@@ -92,10 +92,9 @@ for pod in pods['items']:
         continue
 
     if pod['kind'] == "Pod":
-        if 'podIP' not in pod['status']:
-            logging.warning("no podIP on pod " + pod['status']['phase'] + " " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
-        else:
-            logging.info("processing pod " + pod['status']['podIP'] + " " + pod['status']['phase'] + " " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
+        logging.info("processing pod " + 
+                     (pod['status']['podIP'] if 'podIP' in pod['status'] else "") + " " +
+                     pod['status']['phase'] + " " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
 
         if pod['status']['phase'] == "Running":
             if pod['status']['podIP'] in runningPods:
@@ -135,6 +134,7 @@ if 'items' not in endpoints:
 
 print("Checking service endpoints")
 errorCount = 0
+endpointCount = 0
 for service in endpoints['items']:
     if 'kind' not in service:
         logging.error("item has no 'kind' attribute")
@@ -144,15 +144,16 @@ for service in endpoints['items']:
         logging.info("checking service " + service['metadata']['namespace'] + "/" + service['metadata']['name'])
 
         if 'subsets' not in service:
-            logging.warning("  skipping - no subsets - service " + service['metadata']['namespace'] + "/" + service['metadata']['name'])
+            logging.info("  skipping - no subsets - service: " + service['metadata']['namespace'] + "/" + service['metadata']['name'])
             continue
 
         for subset in service['subsets']:
             if 'addresses' not in subset:
-                logging.warning("  skipping service with no addresses ready " + service['metadata']['namespace'] + "/" + service['metadata']['name'])
+                logging.warning("  skipping service with no addresses ready: " + service['metadata']['namespace'] + "/" + service['metadata']['name'])
                 continue
 
             for address in subset['addresses']:
+                endpointCount += 1
                 if 'targetRef' in address:
                     target = address['targetRef']
                 else:
@@ -170,4 +171,4 @@ for service in endpoints['items']:
     else:
         logging.warning("skiping unknown item type \"", service['kind'], "\"")
 
-print("Checked " + str(len(endpoints['items'])) + " services - " + str(errorCount) + " missing IPs found")
+print("Checked " + str(endpointCount) + " endpoints on " + str(len(endpoints['items'])) + " services - " + str(errorCount) + " missing IPs found")
