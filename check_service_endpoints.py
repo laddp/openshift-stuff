@@ -33,7 +33,7 @@ if arguments.logLevel is not None:
 # read endpoints
 ################
 if arguments.endpoints_file is None:
-    print("Gathering subprocess data")
+    print("Gathering endpoint data from oc")
     if hasattr(subprocess, 'run'):
         endpoints_run = subprocess.run(['oc', 'get', 'endpoints', '--all-namespaces', '-o', 'yaml'],
                                        check=True, capture_output=True)
@@ -41,6 +41,7 @@ if arguments.endpoints_file is None:
     else:
         endpoints_out = subprocess.check_output(['oc', 'get', 'endpoints', '--all-namespaces', '-o', 'yaml'])
 else:
+    print("Loading endpoint data from " + arguments.endpoints_file.name)
     endpoints_out = arguments.endpoints_file.read()
     arguments.endpoints_file.close()
 
@@ -49,12 +50,13 @@ try:
 except yaml.YAMLError as exc:
     logging.critical(exc)
     exit(1)
+print("Endpoint data loaded")
 
 ###########
 # read pods
 ###########
 if arguments.pods_file is None:
-    print("Gathering pod data")
+    print("Gathering pod data from oc")
     if hasattr(subprocess, 'run'):
         pods_run = subprocess.run(['oc', 'get', 'pods', '--all-namespaces', '-o', 'yaml'],
                           check=True, capture_output=True)
@@ -62,6 +64,7 @@ if arguments.pods_file is None:
     else:
         pods_out = subprocess.check_output(['oc', 'get', 'pods', '--all-namespaces', '-o', 'yaml'])
 else:
+    print("Loading pod data from " + arguments.pods_file.name)
     pods_out = arguments.pods_file.read()
     arguments.pods_file.close()
 
@@ -70,6 +73,8 @@ try:
 except yaml.YAMLError as exc:
     logging.critical(exc)
     exit(1)
+
+print("Pod data loaded")
 
 ############################################
 # build list of all pod IPs and their states
@@ -80,15 +85,17 @@ if 'items' not in pods:
 
 runningPods = {}
 
-logging.info("Building pod list")
-
+print("Building pod list")
 for pod in pods['items']:
     if 'kind' not in pod:
         logging.error("item has no 'kind' attribute")
         continue
 
     if pod['kind'] == "Pod":
-        logging.info("processing pod " + pod['status']['podIP'] + " " + pod['status']['phase'] + " " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
+        if 'podIP' not in pod['status']:
+            logging.warning("no podIP on pod " + pod['status']['phase'] + " " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
+        else:
+            logging.info("processing pod " + pod['status']['podIP'] + " " + pod['status']['phase'] + " " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
 
         if pod['status']['phase'] == "Running":
             if pod['status']['podIP'] in runningPods:
@@ -108,7 +115,7 @@ for pod in pods['items']:
                     'podCount': 1 }
         else:
             logging.info("Skipping pod in status other than 'Running' - " + pod['status']['phase'] +
-                         " IP: " + pod['status']['podIP'] + " " +
+                         (" IP: " + pod['status']['podIP'] + " ") if 'podIP' in pod['status'] else "" +
                          " Namespace/name: " + pod['metadata']['namespace'] + '/' + pod['metadata']['name'])
     else:
         logging.error("unknown item type \"" + item['kind'] + "\"")
@@ -126,6 +133,7 @@ if 'items' not in endpoints:
     logging.error("no endpoint items found")
     exit(1)
 
+print("Checking service endpoints")
 errorCount = 0
 for service in endpoints['items']:
     if 'kind' not in service:
@@ -140,6 +148,10 @@ for service in endpoints['items']:
             continue
 
         for subset in service['subsets']:
+            if 'addresses' not in subset:
+                logging.warning("  skipping service with no addresses ready " + service['metadata']['namespace'] + "/" + service['metadata']['name'])
+                continue
+
             for address in subset['addresses']:
                 if 'targetRef' in address:
                     target = address['targetRef']
