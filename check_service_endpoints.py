@@ -1,6 +1,5 @@
 #!/usr/bin/python
-# Git $ID$
-import sys
+# Git $Id$
 import yaml
 import logging
 import argparse
