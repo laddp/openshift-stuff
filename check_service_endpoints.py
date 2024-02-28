@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# Git $ID$
 import sys
 import yaml
 import logging
